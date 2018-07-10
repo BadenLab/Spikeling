@@ -1,0 +1,22 @@
+References,Qty,Description,Manufacturer,MPN,Manufacturer,MPN,Digikey,Mouser,RS,Newark,Farnell
+,,,,,,,,,,,
+,,,,,,,,,,,
+MCU,1,Arduino Nano,Arduino,A000087,Arduino,A000005 ,1050-1001-ND,992-ARD-NANO30,,,1848691
+U5,2,Headers 15 pin 1 row,Samtec inc,SSA-115-S-T ,Samtec Inc,SSW-115-01-T-S ,SAM1122-15-ND ,,,,2779587
+Battery clip,1,9V PP3,KEYSTONE,1294,,,,,,,1650674
+Potentiometers,4,10k/50mw/20%,Alps,RK09K1130AH1 ,,,,,,,1191725
+Buzzer,1,25V 75dB,Murata,PKM22EPPH4001-B0 ,,,,,,,1192512
+BNC connectors,5,female PCB conn,Radiall,R141426161 ,,,,,,,4195115
+Pushbutton,1,35V 10mA,E-switch,KS-01Q-01,,,,,,,2522279
+LED,2,617nm 2V 20mA,Knightbright,L-793ID ,,,,,,,1142588
+C1,1,100V 1nf 5%,Multicomp,MCRR50102COGJ0100 ,,,,,,,1216422
+"R1,R4",2,250V 10k 250mW 1%,Multicomp,MF25 10K ,,,,,,,9341110
+R2,1,250V 47ohm 250mW 1%,Multicomp,MF25 47R,,,,,,,9341986
+R3,1,250V 10ohm 250mW 1%,Multicomp,MF25 10R,,,,,,,9341145
+Battery,1,9V PP3,Panasonic,6F22REL/1BP ,,,,,,,1018880
+BNC cable,1,Male to Male,Amphenol,779829-58-0.6 ,Cal test,CT2942-50 ,BKCT2942-50-ND ,,,,1261916
+BNC connector,1,Male to wire,Clever little box,CLB-JL-73 ,,,,,,,2381877
+BNC adapter,1,Jack Jack adaptor,Multicomp,BNC JACK JACK ADAPTOR NICKEL ,,,,,,,1169741
+Photodiode,1,IR 20°,Osram,SFH203,Osram,SFH203-FA ,,,654-8154,,1212743
+M3 screws,2,6mm M3,TR Fastenings,M36 KHHTMCS100- ,RS-Pro,528-946,,,528-946,,1420609
+M3 nuts,2,M3,TR Fastenings,M3- HFA2-S100- ,RS-Pro,560-293,,,560-293,,1420788
