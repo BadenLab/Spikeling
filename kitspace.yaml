@@ -1,0 +1,5 @@
+summary: A description for your project
+site: https://open-labware.net/projects/spikeling/
+color: green
+bom: 1-click_BOM.tsv
+gerbers: PCB/gerbers
