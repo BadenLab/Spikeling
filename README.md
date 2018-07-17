@@ -15,17 +15,5 @@ Spikeling is based on an Arduino microcontroller running the computationally eff
 
 In this repository and the associated publication (linked above) you will find all files needed to build a Spikeling, get started with it and do some basic data analysis.
 
-Key files:
-- 1-click_BOM.tsv and tsv.ods (simple 1-click-to-buy all parts needed to build one, execute by XXX)
-- Bill of Materials (BOM).xlsx (Table of all components including links)
-- Serial Oscilloscope (PC).zip (serial plotter)
-- Spikeling Analysis.ipynb (Python code for Analysis)
-- Spikeling PCB.pdf (detail on the printed circuit board)
-- Spikeling manual and exercises[...].pdf
-- kitspace.yaml
-- spikelingFunctions - kernels.m (Matlab code for STAs)
-- spikelingFunctions.m (Matlab code for basic Analysis)
-- under 3D print, Spikeling LED holder.scad (simple model that allows stabilising a stimulus LED above the photodiode)
-- under Arduino ... (XXX)
-- under PCB (XXX)...
+
 
