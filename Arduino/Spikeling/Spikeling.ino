@@ -78,8 +78,8 @@ typedef struct {
 
 // Hardware-specific settings
 //
-//#include "SettingsArduino.h"
-#include "SettingsESP.h"
+#include "SettingsArduino.h" // Swap these if the ESP is used instead of Arduino Nano (for Spikeling 2.0, see GitHub/Manual)
+//#include "SettingsESP.h"
   
 ////////////////////////////////////////////////////////////////////////////
 // Setup variables required to drive the model
