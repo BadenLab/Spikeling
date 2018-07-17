@@ -1,4 +1,4 @@
-References,Qty,Description,Manufacturer,MPN,Manufacturer,MPN,Digikey,Mouser,RS,Newark,Farnell
+References,Qty,Description,Manufacturer,MPN,Manufacturer_1,MPN_2,Digikey,Mouser,RS,Newark,Farnell
 ,,,,,,,,,,,
 ,,,,,,,,,,,
 MCU,1,Arduino Nano,Arduino,A000087,Arduino,A000005 ,1050-1001-ND,992-ARD-NANO30,,,1848691
@@ -18,5 +18,5 @@ BNC cable,1,Male to Male,Amphenol,779829-58-0.6 ,Cal test,CT2942-50 ,BKCT2942-50
 BNC connector,1,Male to wire,Clever little box,CLB-JL-73 ,,,,,,,2381877
 BNC adapter,1,Jack Jack adaptor,Multicomp,BNC JACK JACK ADAPTOR NICKEL ,,,,,,,1169741
 Photodiode,1,IR 20°,Osram,SFH203,Osram,SFH203-FA ,,,654-8154,,1212743
-M3 screws,2,6mm M3,TR Fastenings,M36 KHHTMCS100- ,RS-Pro,528-946,,,528-946,,1420609
-M3 nuts,2,M3,TR Fastenings,M3- HFA2-S100- ,RS-Pro,560-293,,,560-293,,1420788
+M3 screws,1,6mm M3,TR Fastenings,M36 KHHTMCS100- ,RS-Pro,528-946,,,528-946,,1420609
+M3 nuts,1,M3,TR Fastenings,M3- HFA2-S100- ,RS-Pro,560-293,,,560-293,,1420788
