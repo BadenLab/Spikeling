@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 // Spikeling v1.1. By T Baden, Sussex Neuroscience, UK (www.badenlab.org) //
-// 2017                                                             //
+// 2017                                                                   //
 // Izhikevich model taken from original paper (2003 IEEE)                 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +64,7 @@ typedef struct {
   float v, I_total, I_PD, I_AnalogIn, I_Synapse; 
   int Stim_State, SpikeIn1State, SpikeIn2State; 
   unsigned long currentMicros;
+  int NeuronBehaviour;
   } output_t;
 
 #define ID_V                 0
@@ -326,6 +327,7 @@ void loop(void) {
   Output.SpikeIn1State = SpikeIn1State; 
   Output.SpikeIn2State = SpikeIn2State; 
   Output.currentMicros = currentMicros; 
+  Output.NeuronBehaviour = NeuronBehaviour;
 
   #ifdef USES_PLOTTING
   plot(&Output);

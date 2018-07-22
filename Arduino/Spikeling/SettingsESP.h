@@ -6,7 +6,7 @@
 // Pin definitions (simulation-related)
 // -----------------------------------------------------------------------------      
 #define PhotoDiodePin 0  // Photodiode
-#define LEDOutPin 1      // LED
+#define LEDOutPin 0      // LED
 #define ButtonPin 2      // Push button to switch spike modes
 #define VmPotPin 3       // Resting membrane potential
 #define Syn1PotPin 4     // efficacy synapse 1
@@ -29,7 +29,6 @@
 // Serial out 
 //
 #define SerOutBAUD 921600
-//#define SerOutBAUD 230400
 
 // -----------------------------------------------------------------------------      
 // Pin definitions (hardware add-ons)
@@ -73,21 +72,20 @@ MiniGrafx gfx = MiniGrafx(&tft, BITS_PER_PIXEL, palette);
 
 // Definitions and variables for plotting
 //
-#define INFO_DY 18 // Height of info panel
+#define INFO_DY 20 // Height of info panel
 #define MAX_TRACES 3 // Maximal number of traces shown in parallel
 #define MAX_VALUES 320 // Maximal trace length
 #define PLOT_UPDATE 16 // Redraw screen every # values
 
-#define V_MIN -100
-#define V_MAX 40
-
-const char* OutputStr[]= {"V_mem [V] ", "I_tot [pA]", "I_PD [pA] ", "I_AIn [pA]", 
-                          "I_Syn [pA]", "Stim_State", "SpIn1State", "SpIn2State", 
-                          "time [us] "};
+const char* OutputStr[]= {"V_m[mV]", "I_t[pA]", "I_PD[pA]", "I_AI[pA]", 
+                          "I_Sy[pA]", "StmSt", "SpIn1", "SpIn2", 
+                          "t[us]"};
 
 int TraceCols[MAX_TRACES] = {13,11,15};
 int Traces[MAX_TRACES][MAX_VALUES];
 int TracesStrIndex[MAX_TRACES];
+int TraceSet;
+float TracesMinMax[MAX_TRACES][2];
 int iPnt, dyPlot, dxInfo;
 char timeStr[16];
 
@@ -98,6 +96,24 @@ char timeStr[16];
 // -----------------------------------------------------------------------------      
 // Helpers
 // -----------------------------------------------------------------------------      
+void setTraceSet()
+{
+  switch(TraceSet) {
+    case 0:
+    default:
+      TracesStrIndex[0] = ID_V;
+      TracesMinMax[0][0] = -105;
+      TracesMinMax[0][1] = 20;
+      TracesStrIndex[1] = ID_I_TOTAL;
+      TracesMinMax[1][0] = -150;
+      TracesMinMax[1][1] = 100;
+      TracesStrIndex[2] = ID_I_STIM_STATE;
+      TracesMinMax[2][0] = -50;
+      TracesMinMax[2][1] =50;
+  }
+}
+
+
 void initializeHardware() 
 {
 /*pinMode(LED_BUILTIN, OUTPUT); // 13 digital
@@ -116,6 +132,7 @@ void initializeHardware()
   
   TCCR2B = TCCR2B & 0b11111000 | 0x01; // sets PWM pins 3 and 11 (timer 2) to 31250 Hz    
 */  
+  
   // Turn on the background LED of TFT
   //
   pinMode(TFT_LED, OUTPUT);
@@ -127,8 +144,15 @@ void initializeHardware()
   dyPlot = SCREEN_HEIGHT -INFO_DY;
   dxInfo = SCREEN_WIDTH /(MAX_TRACES +1);
   timeStr[0] = 0;
+  for(int i=0; i<MAX_TRACES; i++) {
+    TracesMinMax[i][0] = 0;
+    TracesMinMax[i][1] = 0;
+  }
+  TraceSet = 0;
+  setTraceSet();
   
   // Set rotation and clear screen
+  // (landscape, USB port up)
   //
   gfx.init();
   gfx.setRotation(3); // landscape, USB port up
@@ -185,9 +209,11 @@ void housekeeping()
 // -----------------------------------------------------------------------------
 // Graphics
 // -----------------------------------------------------------------------------   
-int getYCoord(float vMin, float vMax, float v) 
+int getYCoord(int iTr, float v) 
 {
-  return SCREEN_HEIGHT -1 -map(round(v), vMin, vMax, 0, dyPlot);
+  // Convert the value into a coordinate on the screen
+  //
+  return SCREEN_HEIGHT -1 -map(round(v), TracesMinMax[iTr][0], TracesMinMax[iTr][1], 0, dyPlot);
 }
 
 
@@ -195,14 +221,15 @@ void plot(output_t* Output)
 {
   int y, iTr;
 
-  // Add data to traces and save index of output variable string
+  // Depending on selected trace set, add data to trace array 
   //
-  Traces[0][iPnt] = getYCoord(V_MIN, V_MAX, Output->v);
-  TracesStrIndex[0] = ID_V;
-  Traces[1][iPnt] = getYCoord(V_MIN*2, V_MAX*2, Output->I_total);  
-  TracesStrIndex[1] = ID_I_TOTAL;
-  Traces[2][iPnt] = getYCoord(V_MIN*2, V_MAX*2, Output->Stim_State);    
-  TracesStrIndex[2] = ID_I_STIM_STATE;
+  switch(TraceSet) {
+    case 0:
+    default:
+      Traces[0][iPnt] = getYCoord(0, Output->v);
+      Traces[1][iPnt] = getYCoord(1, Output->I_total);  
+      Traces[2][iPnt] = getYCoord(2, Output->Stim_State);    
+  }
 
   // Draw new piece of each trace
   //
@@ -224,15 +251,17 @@ void plot(output_t* Output)
     //
     for(iTr=0; iTr<MAX_TRACES; iTr++) {
       gfx.setColor(TraceCols[iTr]);
-      gfx.drawString(dxInfo/2 +(iTr+1)*dxInfo, dyPlot, OutputStr[TracesStrIndex[iTr]]);
+      gfx.drawString(dxInfo/2 +(iTr+1)*dxInfo +5, dyPlot, OutputStr[TracesStrIndex[iTr]]);
     }
   }
   if((((iPnt-1) % PLOT_UPDATE) == 0) || (iPnt == 0)) {
-    // Redraw time (first old string in black, then new string in white)
+    // Redraw time and mode
+    // (first old string in black, then new string in white; this is much faster then
+    //  clearing the info area with a filled rectangle)
     //
     gfx.setColor(0);
     gfx.drawString(dxInfo/2, dyPlot, timeStr);
-    sprintf(timeStr, "%3.1f [s]\n", Output->currentMicros /1E6);
+    sprintf(timeStr, "M%d %.1fs\n", Output->NeuronBehaviour, Output->currentMicros /1E6);
     gfx.setColor(1);
     gfx.drawString(dxInfo/2, dyPlot, timeStr);
     
