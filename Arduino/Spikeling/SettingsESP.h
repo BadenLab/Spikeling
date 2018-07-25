@@ -1,34 +1,75 @@
+// -----------------------------------------------------------------------------      
+// Settings for the following ESP boards:
+// 1) Wemos D1 Pro Board (ESP8266)
+//    https://wiki.wemos.cc/products:d1:d1_mini_pro
+//    as the version used in the Thingpulse ESP8266 WiFi Color Display Kit 2.4″,
+//    see https://thingpulse.com/product/esp8266-wifi-color-display-kit-2-4/
+//
+// 2) Adafruit HUZZAH32 Feather Board (ESP32)
+//    https://www.adafruit.com/product/3405
+//    in combination with the Adafruit 2.4" TFT FeatherWing,
+//    see https://learn.adafruit.com/adafruit-2-4-tft-touch-screen-featherwing
+//
+// -----------------------------------------------------------------------------     
+#include <SPI.h>
+#include "MiniGrafx.h" // General graphic library
+#include "ILI9341_SPI.h" // Hardware-specific library
+
 //#define USE_FAST_ADC
-#define USES_PLOTTING
-#define NEEDS_HOUSEKEEPING
+#define   USES_PLOTTING
+#define   NEEDS_HOUSEKEEPING
 
 // -----------------------------------------------------------------------------      
 // Pin definitions (simulation-related)
 // -----------------------------------------------------------------------------      
-#define PhotoDiodePin 0  // Photodiode
-#define LEDOutPin 0      // LED
-#define ButtonPin 2      // Push button to switch spike modes
-#define VmPotPin 3       // Resting membrane potential
-#define Syn1PotPin 4     // efficacy synapse 1
-#define Syn2PotPin 5     // efficacy synapse 2
-#define NoisePotPin 6    // scaling of Noise level 
-#define DigitalIn1Pin 7  // Synapse 1 Input - expects 5V pulses
-#define DigitalIn2Pin 8  // Synapse 2 input - expects 5V pulses
-#define AnalogInPin 9    // Analog in- takes 0-5V (positive only)
-#define DigitalOutPin 10 // "Axon" - generates 5V pulses
-#define AnalogOutPin 11  // Analog out for full spike waveform
+#ifdef ESP8266
+  #define PhotoDiodePin 0  // Photodiode
+  #define LEDOutPin     0   // LED
+  #define ButtonPin     2   // Push button to switch spike modes
+  #define VmPotPin      3   // Resting membrane potential
+  #define Syn1PotPin    4   // efficacy synapse 1
+  #define Syn2PotPin    5   // efficacy synapse 2
+  #define NoisePotPin   6   // scaling of Noise level 
+  #define DigitalIn1Pin 7   // Synapse 1 Input - expects 5V pulses
+  #define DigitalIn2Pin 8   // Synapse 2 input - expects 5V pulses
+  #define AnalogInPin   9   // Analog in- takes 0-5V (positive only)
+  #define DigitalOutPin 10  // "Axon" - generates 5V pulses
+  #define AnalogOutPin  11  // Analog out for full spike waveform
 
-// Digital and analog I/O helper macros
-//
-#define pinModeHelper(pin, mode) pinModeNew(pin, mode)
-#define digitalReadHelper(pin) digitalReadNew(pin) 
-#define digitalWriteHelper(pin, val) digitalWriteNew(pin, val)
-#define analogReadHelper(pin) analogReadNew(pin)
-#define analogWriteHelper(pin, val) analogWriteNew(pin, val)
+  // Digital and analog I/O helper macros
+  //
+  #define pinModeHelper(pin, mode)      pinModeNew(pin, mode)
+  #define digitalReadHelper(pin)        digitalReadNew(pin) 
+  #define digitalWriteHelper(pin, val)  digitalWriteNew(pin, val)
+  #define analogReadHelper(pin)         analogReadNew(pin)
+  #define analogWriteHelper(pin, val)   analogWriteNew(pin, val)
+#endif
+#ifdef ESP32
+  #define PhotoDiodePin 0  // Photodiode
+  #define LEDOutPin     0   // LED
+  #define ButtonPin     2   // Push button to switch spike modes
+  #define VmPotPin      3   // Resting membrane potential
+  #define Syn1PotPin    4   // efficacy synapse 1
+  #define Syn2PotPin    5   // efficacy synapse 2
+  #define NoisePotPin   6   // scaling of Noise level 
+  #define DigitalIn1Pin 7   // Synapse 1 Input - expects 5V pulses
+  #define DigitalIn2Pin 8   // Synapse 2 input - expects 5V pulses
+  #define AnalogInPin   9   // Analog in- takes 0-5V (positive only)
+  #define DigitalOutPin 10  // "Axon" - generates 5V pulses
+  #define AnalogOutPin  11  // Analog out for full spike waveform
 
+  // Digital and analog I/O helper macros
+  //
+  #define pinModeHelper(pin, mode)      pinModeNew(pin, mode)
+  #define digitalReadHelper(pin)        digitalReadNew(pin) 
+  #define digitalWriteHelper(pin, val)  digitalWriteNew(pin, val)
+  #define analogReadHelper(pin)         analogReadNew(pin)
+  #define analogWriteHelper(pin, val)   analogWriteNew(pin, val)
+#endif 
+  
 // Serial out 
 //
-#define SerOutBAUD 921600
+#define SerOutBAUD    921600
 
 // -----------------------------------------------------------------------------      
 // Pin definitions (hardware add-ons)
@@ -36,10 +77,24 @@
 #include <SPI.h>
 #include "MiniGrafx.h" // General graphic library
 #include "ILI9341_SPI.h" // Hardware-specific library
+/*
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
+*/
 
-#define TFT_DC D2
-#define TFT_CS D1
-#define TFT_LED D8
+#ifdef ESP8266
+  #define TFT_DC D2
+  #define TFT_CS D1
+  #define TFT_LED D8
+#endif
+#ifdef ESP32
+  #define TFT_DC   33
+  #define TFT_CS   15
+  /*
+  #define STMPE_CS 32
+  #define SD_CS    14
+  */
+#endif  
 
 // Define colors usable in the paletted 16 color frame buffer
 //
@@ -60,10 +115,16 @@ uint16_t palette[] = {ILI9341_BLACK, // 0
                       ILI9341_MAGENTA, // 14
                       ILI9341_YELLOW}; // 15
 
-const int SCREEN_WIDTH = 320;
-const int SCREEN_HEIGHT = 240;
-const int BITS_PER_PIXEL = 4; // 2^4 = 16 colors
-const int FONT_HEIGHT = 14; // Standard font
+const int SCREEN_WIDTH    = 320;
+const int SCREEN_HEIGHT   = 240;
+const int BITS_PER_PIXEL  = 4; // 2^4 = 16 colors
+const int FONT_HEIGHT     = 14; // Standard font
+#ifdef ESP8266
+  const int SCREEN_ORIENT = 3; 
+#endif  
+#ifdef ESP32
+  const int SCREEN_ORIENT = 1;
+#endif  
 
 // Initialize the driver
 //
@@ -72,11 +133,11 @@ MiniGrafx gfx = MiniGrafx(&tft, BITS_PER_PIXEL, palette);
 
 // Definitions and variables for plotting
 //
-#define INFO_DY 20 // Height of info panel
-#define MAX_TRACES 3 // Maximal number of traces shown in parallel
-#define MAX_VALUES 320 // Maximal trace length
-#define PLOT_UPDATE 16 // Redraw screen every # values
-
+#define INFO_DY      20  // Height of info panel
+#define MAX_TRACES   3   // Maximal number of traces shown in parallel
+#define MAX_VALUES   320 // Maximal trace length
+#define PLOT_UPDATE  16  // Redraw screen every # values
+ 
 const char* OutputStr[]= {"V_m[mV]", "I_t[pA]", "I_PD[pA]", "I_AI[pA]", 
                           "I_Sy[pA]", "StmSt", "SpIn1", "SpIn2", 
                           "t[us]"};
@@ -101,15 +162,15 @@ void setTraceSet()
   switch(TraceSet) {
     case 0:
     default:
-      TracesStrIndex[0] = ID_V;
+      TracesStrIndex[0]  = ID_V;
       TracesMinMax[0][0] = -105;
       TracesMinMax[0][1] = 20;
-      TracesStrIndex[1] = ID_I_TOTAL;
+      TracesStrIndex[1]  = ID_I_TOTAL;
       TracesMinMax[1][0] = -150;
       TracesMinMax[1][1] = 100;
-      TracesStrIndex[2] = ID_I_STIM_STATE;
+      TracesStrIndex[2]  = ID_I_STIM_STATE;
       TracesMinMax[2][0] = -50;
-      TracesMinMax[2][1] =50;
+      TracesMinMax[2][1] = 50;
   }
 }
 
@@ -132,11 +193,12 @@ void initializeHardware()
   
   TCCR2B = TCCR2B & 0b11111000 | 0x01; // sets PWM pins 3 and 11 (timer 2) to 31250 Hz    
 */  
-  
-  // Turn on the background LED of TFT
-  //
-  pinMode(TFT_LED, OUTPUT);
-  digitalWrite(TFT_LED, HIGH);
+  #ifdef ESP8266
+    // Turn on the background LED of TFT
+    //
+    pinMode(TFT_LED, OUTPUT);
+    digitalWrite(TFT_LED, HIGH);
+  #endif
 
   // Initialise a few variables
   //
@@ -155,7 +217,7 @@ void initializeHardware()
   // (landscape, USB port up)
   //
   gfx.init();
-  gfx.setRotation(3); // landscape, USB port up
+  gfx.setRotation(SCREEN_ORIENT); 
   gfx.setFastRefresh(true);
   gfx.fillBuffer(0);
   gfx.setTextAlignment(TEXT_ALIGN_CENTER);

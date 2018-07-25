@@ -1,3 +1,7 @@
+// -----------------------------------------------------------------------------      
+// Settings for the Arduino Pro (Mini)
+//
+// -----------------------------------------------------------------------------      
 #define USE_FAST_ADC
 //#define USES_PLOTTING
 //#define NEEDS_HOUSEKEEPING
