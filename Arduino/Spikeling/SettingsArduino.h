@@ -2,9 +2,11 @@
 // Settings for the Arduino Pro (Mini)
 //
 // -----------------------------------------------------------------------------      
-#define USE_FAST_ADC
+#define   USES_FAST_ADC
 //#define USES_PLOTTING
-//#define NEEDS_HOUSEKEEPING
+//#define USES_FULL_REDRAW
+//#define USES_HOUSEKEEPING
+//#define USES_DAC
 
 // -----------------------------------------------------------------------------      
 // Pin definitions (simulation-related)
@@ -74,7 +76,7 @@ void initializeHardware()
   // Change ADC prescaler 16, which slighly decreases the ADC precision but 
   // speeds up the time per loop by ~20% 
   //
-  #ifdef USE_FAST_ADC
+  #ifdef USES_FAST_ADC
   sbi(ADCSRA,ADPS2);
   cbi(ADCSRA,ADPS1);
   cbi(ADCSRA,ADPS0);

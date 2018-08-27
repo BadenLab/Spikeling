@@ -79,8 +79,8 @@ typedef struct {
 
 // Hardware-specific settings
 //
-#include "SettingsArduino.h" // Swap these if the ESP is used instead of Arduino Nano (for Spikeling 2.0, see GitHub/Manual)
-//#include "SettingsESP.h"
+//#include "SettingsArduino.h" // Swap these if the ESP is used instead of Arduino Nano (for Spikeling 2.0, see GitHub/Manual)
+#include "SettingsESP.h"
   
 ////////////////////////////////////////////////////////////////////////////
 // Setup variables required to drive the model
@@ -145,7 +145,7 @@ void loop(void) {
   unsigned long currentMicros = micros() - startMicros;  
 
   // do housekeeping, if needed
-  #ifdef NEEDS_HOUSEKEEPING
+  #ifdef USES_HOUSEKEEPING
   housekeeping();
   #endif
   
@@ -240,6 +240,11 @@ void loop(void) {
   if (v<=-90) {v=-90.0;} // prevent from analog out (below) going into overdrive - but also means that it will flatline at -90. Change the "90" in this line and the one below if want to
   int AnalogOutValue = (v+90) * 2;
   analogWriteHelper(AnalogOutPin,AnalogOutValue);
+  
+  #ifdef USES_DAC
+    dacWriteHelper(DACOutPin, uint8_t(map(v, -90,20, 0,255)));
+  #endif
+  
   if (noled==0) {
     analogWriteHelper(LEDOutPin,AnalogOutValue);
   }
