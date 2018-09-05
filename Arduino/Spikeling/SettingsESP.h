@@ -1,9 +1,10 @@
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Settings for the following ESP boards:
 // 1) Wemos D1 Pro Board (ESP8266)
 //    https://wiki.wemos.cc/products:d1:d1_mirni_pro
 //    as the version used in the Thingpulse ESP8266 WiFi Color Display Kit 2.4″,
 //    see https://thingpulse.com/product/esp8266-wifi-color-display-kit-2-4/
+//    IMPLEMENTATION INCOMPLETE
 //
 // 2) Adafruit HUZZAH32 Feather Board (ESP32)
 //    https://www.adafruit.com/product/3405
@@ -18,34 +19,30 @@
 // - "Mcp23s08" by sumotoy (https://github.com/sumotoy/gpio_expander)
 //   adapted by Thomas Euler
 //
-// -----------------------------------------------------------------------------     
-#include <SPI.h>
-#include "MiniGrafx.h" 
-#include "ILI9341_SPI.h" 
-#include <Adafruit_STMPE610.h>
-#include <Mcp3208.h>
-#include <Mcp23s08.h>   
-
-/*
-#include <Adafruit_GFX.h>    
-#include <Adafruit_ILI9341.h>
-*/
-
+// -----------------------------------------------------------------------------
 //#define USES_FAST_ADC
-#define   USES_PLOTTING
+//#define USES_PLOTTING
 //#define USES_FULL_REDRAW
 #define   USES_HOUSEKEEPING
 #define   USES_DAC
 
-// -----------------------------------------------------------------------------      
+#include "Definitions.h"
+#include <SPI.h>
+#include "MiniGrafx.h"
+#include "ILI9341_SPI.h"
+#include <Adafruit_STMPE610.h>
+#include <Mcp3208.h>
+#include <Mcp23s08.h>
+
+// -----------------------------------------------------------------------------
 #define   MCP3208_FIRST  100
 #define   MCP3208_LAST   107
 #define   MCP23S08_FIRST 110
 #define   MCP23S08_LAST  117
 
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Pin definitions (simulation-related)
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 #ifdef ESP8266
   #define PhotoDiodePin -1  //              Photodiode
   #define LEDOutPin     -2  //              LED
@@ -53,7 +50,7 @@
   #define VmPotPin      -4  //              Resting membrane potential
   #define Syn1PotPin    -5  //              efficacy synapse 1
   #define Syn2PotPin    -6  //              efficacy synapse 2
-  #define NoisePotPin   -7  //              scaling of Noise level 
+  #define NoisePotPin   -7  //              scaling of Noise level
   #define DigitalIn1Pin -8  //              Synapse 1 Input - expects 5V pulses
   #define DigitalIn2Pin -9  //              Synapse 2 input - expects 5V pulses
   #define AnalogInPin   -10 //              Analog in- takes 0-5V (positive only)
@@ -65,7 +62,7 @@
   // Digital and analog I/O helper macros
   //
   #define pinModeHelper(pin, mode)          pinModeNew(pin, mode)
-  #define digitalReadHelper(pin)            digitalReadNew(pin) 
+  #define digitalReadHelper(pin)            digitalReadNew(pin)
   #define digitalWriteHelper(pin, val)      digitalWriteNew(pin, val)
   #define analogReadHelper(pin)             analogReadNew(pin)
   #define analogWriteHelper(pin, val)       analogWriteNew(pin, val)
@@ -78,7 +75,7 @@
   #define VmPotPin       MCP3208_FIRST+0    // -> A3       Resting membrane potential
   #define Syn1PotPin     MCP3208_FIRST+3    // -> A7       efficacy synapse 1
   #define Syn2PotPin     MCP3208_FIRST+4    // -> A5       efficacy synapse 2
-  #define NoisePotPin    MCP3208_FIRST+1    // -> A6       scaling of Noise level 
+  #define NoisePotPin    MCP3208_FIRST+1    // -> A6       scaling of Noise level
   #define DigitalIn1Pin  MCP23S08_FIRST+2   // -> 4        Synapse 1 Input - expects 5V pulses
   #define DigitalIn2Pin  MCP23S08_FIRST+3   // -> 5        Synapse 2 input - expects 5V pulses
   #define AnalogInPin    MCP3208_FIRST+5    // -> A2       Analog in- takes 0-5V (positive only)
@@ -90,14 +87,14 @@
   // Digital and analog I/O helper macros
   //
   #define pinModeHelper(pin, mode)      pinModeNew(pin, mode)
-  #define digitalReadHelper(pin)        digitalReadNew(pin) 
+  #define digitalReadHelper(pin)        digitalReadNew(pin)
   #define digitalWriteHelper(pin, val)  digitalWriteNew(pin, val)
   #define analogReadHelper(pin)         analogReadNew(pin)
   #define analogWriteHelper(pin, val)   analogWriteNew(pin, val)
   #define dacWriteHelper(pin, val)      dacWrite(pin, val)
 
   // NOTES:
-  // (1) analogWrite() is not implemented in the ESP32, therefore use ledcXXX() 
+  // (1) analogWrite() is not implemented in the ESP32, therefore use ledcXXX()
   //     functions instead. This requires an LED channel ID (0..15), a frequency
   //    (not sure what unit that is ...) and a bit depth (up to 16 bits)
   //    https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.c
@@ -113,20 +110,20 @@
   //     pins, the mapping to the ADC channels on the chip are defined above,
   //     It's a 12 bit ADC, therefore the results need to be divided by 4.
   //     The MCP3208 is connected to the second SPI bus of the ESP (HSPI), while
-  //     the TFT display uses the primary SPI bus (VSPI). This is nescessary to 
-  //     be able to run the TFT at a particular frequency, at which the MCP3208 
+  //     the TFT display uses the primary SPI bus (VSPI). This is nescessary to
+  //     be able to run the TFT at a particular frequency, at which the MCP3208
   //     does not seem to work reliable.
   //     For pins, see "hardware add-ons" section further below.
-#endif 
-  
-// Serial out 
+#endif
+
+// Serial out
 // (115200=testing; 921600=standard; 1843200=a bit faster but less stable)
 //
 #define SerOutBAUD  921600
 
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Pin definitions (hardware add-ons)
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 #ifdef ESP8266
   #define TFT_DC    D2
   #define TFT_CS    D1
@@ -145,12 +142,12 @@
   #define ADC_CS    13       // secondary SPI bus (HSPI), client #1
   #define DIO_CS    4        // secondary SPI bus (HSPI), client #2
   #define DIO_ADDR  0x20     // address of MCP23S08 (defined by A0,A1 pins)
-  #define DIO_INT   36       // interrupt pin of MCP23S08 (not yet used)  
-  #define ADC_VREF  5000     // Vref for A/D 
+  #define DIO_INT   36       // interrupt pin of MCP23S08 (not yet used)
+  #define ADC_VREF  5000     // Vref for A/D
   #define ADC_CLK   1600000  // secondary SPI bus (HSPI), clock
 //#define ADC_CLK   4000000  // secondary SPI bus (HSPI), clock
 
-#endif  
+#endif
 
 // Define colors usable in the paletted 16 color frame buffer
 //
@@ -176,11 +173,11 @@ const int SCREEN_HEIGHT   = 240;
 const int BITS_PER_PIXEL  = 4; // 2^4 = 16 colors
 const int FONT_HEIGHT     = 14; // Standard font
 #ifdef ESP8266
-  const int SCREEN_ORIENT = 3; 
-#endif  
+  const int SCREEN_ORIENT = 3;
+#endif
 #ifdef ESP32
   const int SCREEN_ORIENT = 1;
-#endif  
+#endif
 
 // Initialize the drivers
 //
@@ -201,10 +198,10 @@ Adafruit_STMPE610 ts      = Adafruit_STMPE610(TOUCH_CS);
 #define MAX_TRACES   3   // Maximal number of traces shown in parallel
 #define MAX_VALUES   320 // Maximal trace length
 #define PLOT_UPDATE  16  // Redraw screen every # values
- 
-const char* OutputStr[] = {"V_m[mV]", "I_t[pA]", "I_PD[pA]", "I_AI[pA]", 
-                           "I_Sy[pA]", "StmSt", "SpIn1", "SpIn2", 
-                           "t[us]"};
+
+const char* OutputInfoStr[] = {"V_m[mV]", "I_t[pA]", "I_PD[pA]", "I_AI[pA]",
+                               "I_Sy[pA]", "StmSt", "SpIn1", "SpIn2",
+                               "t[us]"};
 
 int    TraceCols[MAX_TRACES] = {13,11,15};
 int    Traces[MAX_TRACES][MAX_VALUES];
@@ -215,13 +212,13 @@ int    iPnt, dyPlot, dxInfo;
 char   timeStr[16];
 bool   stateHousekeepingLED;
 
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Other hardware-related definitions
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Helpers
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 void setTraceSet()
 {
   switch(TraceSet) {
@@ -240,16 +237,16 @@ void setTraceSet()
 }
 
 
-void initializeHardware() 
+void initializeHardware()
 {
   #ifdef ESP8266
     // Turn on the background LED of TFT
     //
     pinMode(TFT_LED, OUTPUT);
     digitalWrite(TFT_LED, HIGH);
-    
+
     // Set pins
-    //    
+    //
     // ...
   #endif
   #ifdef ESP32
@@ -268,19 +265,19 @@ void initializeHardware()
     pinMode(DIO_CS, OUTPUT);
     digitalWrite(DIO_CS, HIGH);
     SPISettings settingsHSPI(ADC_CLK, MSBFIRST, SPI_MODE0);
-    hspi->begin(ADC_SCK, ADC_MISO, ADC_MOSI, ADC_CS); 
-    hspi->beginTransaction(settingsHSPI);   
+    hspi->begin(ADC_SCK, ADC_MISO, ADC_MOSI, ADC_CS);
+    hspi->beginTransaction(settingsHSPI);
     for(int i=0; i<8; i++) {
       ADCData[0][0] = 0;
       ADCData[0][1] = 0;
-    }  
+    }
     dio.begin();
     dio.gpioPinMode(ButtonPin -MCP23S08_FIRST, INPUT);
     dio.gpioPinMode(DigitalIn1Pin -MCP23S08_FIRST, INPUT);
     dio.gpioPinMode(DigitalIn2Pin -MCP23S08_FIRST, INPUT);
     dio.gpioPinMode(HousekeepLED -MCP23S08_FIRST, OUTPUT);
     DIOData = 0;
-  #endif  
+  #endif
 
   // Initialise a few variables
   //
@@ -295,28 +292,28 @@ void initializeHardware()
   }
   TraceSet = 0;
   setTraceSet();
-  
+
   // Set rotation and clear screen
   // (landscape, USB port up)
   //
   gfx.init();
-  gfx.setRotation(SCREEN_ORIENT); 
+  gfx.setRotation(SCREEN_ORIENT);
   gfx.setFastRefresh(true);
   gfx.fillBuffer(0);
   gfx.setTextAlignment(TEXT_ALIGN_CENTER);
   gfx.commit();
 }
 
-// -----------------------------------------------------------------------------   
-void dummy(int x, int y) 
-{}
-
-   
-void pinModeNew(int pin, int mode) 
+// -----------------------------------------------------------------------------
+void dummy(int x, int y)
 {}
 
 
-void digitalWriteNew(uint8_t pin, bool val) 
+void pinModeNew(int pin, int mode)
+{}
+
+
+void digitalWriteNew(uint8_t pin, bool val)
 {
   if((pin >= MCP23S08_FIRST) && (pin <= MCP23S08_LAST)) {
     // Handle output pins connected to the port expander MCP23S08
@@ -336,33 +333,33 @@ void digitalWriteNew(uint8_t pin, bool val)
         break;
     }
   }
-} 
-
-
-void analogWriteNew(int pin, int val) 
-{
- #ifdef ESP32
-    switch(pin) {
-      case LEDOutPin:  
-        ledcWrite(LEDOut_LEDCh, val);
-        break;
-      case AnalogOutPin:  
-        ledcWrite(AnalogOut_LEDCh, val);
-        break;
-    }
-  #endif  
 }
 
 
-int digitalReadNew(uint8_t pin) 
+void analogWriteNew(int pin, int val)
+{
+ #ifdef ESP32
+    switch(pin) {
+      case LEDOutPin:
+        ledcWrite(LEDOut_LEDCh, val);
+        break;
+      case AnalogOutPin:
+        ledcWrite(AnalogOut_LEDCh, val);
+        break;
+    }
+  #endif
+}
+
+
+int digitalReadNew(uint8_t pin)
 {
   if((pin >= MCP23S08_FIRST) && (pin <= MCP23S08_LAST)) {
-    // Currently only input pins connected to the port expander 
+    // Currently only input pins connected to the port expander
     // MCP23S08 are handled
     //
     #ifdef USES_HOUSEKEEPING
     return (DIOData & 0x01 << (pin -MCP23S08_FIRST)) > 0 ? HIGH : LOW;
-    #else 
+    #else
     return dio.gpioDigitalRead(pin -MCP23S08_FIRST) > 0 ? HIGH : LOW;
     #endif
   }
@@ -370,7 +367,7 @@ int digitalReadNew(uint8_t pin)
 }
 
 
-int analogReadNew(int pin) 
+int analogReadNew(int pin)
 {
   uint16_t res = 0;
 
@@ -397,12 +394,12 @@ int analogReadNew(int pin)
     }
   }
   return res;
-}  
+}
 
-// -----------------------------------------------------------------------------      
+// -----------------------------------------------------------------------------
 // Housekeeping routine, to be called once per loop
-// -----------------------------------------------------------------------------      
-void housekeeping() 
+// -----------------------------------------------------------------------------
+void housekeeping()
 {
   uint16_t v;
   uint8_t  iCh;
@@ -413,12 +410,12 @@ void housekeeping()
     v  = adc.read(MCP3208::Channel(iCh | 0b1000));
     if((v > 4066) || (v < 30)) {
       ADCData[iCh][1] = ADCData[iCh][0];
-    } 
+    }
     else {
       ADCData[iCh][0] = v;
       ADCData[iCh][1] = v;
     }
-   }    
+   }
 
    // Flash housekeeping LED, if defined
    //
@@ -435,8 +432,8 @@ void housekeeping()
 
 // -----------------------------------------------------------------------------
 // Graphics
-// -----------------------------------------------------------------------------   
-int getYCoord(int iTr, float v) 
+// -----------------------------------------------------------------------------
+int getYCoord(int iTr, float v)
 {
   // Convert the value into a coordinate on the screen
   //
@@ -448,14 +445,14 @@ void plot(output_t* Output)
 {
   int y, iTr;
 
-  // Depending on selected trace set, add data to trace array 
+  // Depending on selected trace set, add data to trace array
   //
   switch(TraceSet) {
     case 0:
     default:
       Traces[0][iPnt] = getYCoord(0, Output->v);
-      Traces[1][iPnt] = getYCoord(1, Output->I_total);  
-      Traces[2][iPnt] = getYCoord(2, Output->Stim_State);    
+      Traces[1][iPnt] = getYCoord(1, Output->I_total);
+      Traces[2][iPnt] = getYCoord(2, Output->Stim_State);
   }
 
   // Draw new piece of each trace
@@ -464,7 +461,7 @@ void plot(output_t* Output)
     #ifndef USES_FULL_REDRAW
       gfx.setColor(0);
       gfx.drawLine(iPnt, 0, iPnt, dyPlot);
-    #endif  
+    #endif
     for(iTr=0; iTr<MAX_TRACES; iTr++) {
       gfx.setColor(TraceCols[iTr]);
       gfx.drawLine(iPnt-1, Traces[iTr][iPnt-1], iPnt, Traces[iTr][iPnt]);
@@ -479,7 +476,7 @@ void plot(output_t* Output)
     #ifndef USES_FULL_REDRAW
       gfx.setColor(0);
       gfx.drawLine(0, 0, 0, dyPlot);
-    #else  
+    #else
       gfx.fillBuffer(0);
     #endif
 
@@ -487,7 +484,7 @@ void plot(output_t* Output)
     //
     for(iTr=0; iTr<MAX_TRACES; iTr++) {
       gfx.setColor(TraceCols[iTr]);
-      gfx.drawString(dxInfo/2 +(iTr+1)*dxInfo +5, dyPlot, OutputStr[TracesStrIndex[iTr]]);
+      gfx.drawString(dxInfo/2 +(iTr+1)*dxInfo +5, dyPlot, OutputInfoStr[TracesStrIndex[iTr]]);
     }
   }
   if((((iPnt-1) % PLOT_UPDATE) == 0) || (iPnt == 0)) {
@@ -500,7 +497,7 @@ void plot(output_t* Output)
     sprintf(timeStr, "M%d %.1fs\n", Output->NeuronBehaviour, Output->currentMicros /1E6);
     gfx.setColor(1);
     gfx.drawString(dxInfo/2, dyPlot, timeStr);
-    
+
     // Commit graph commands
     //
     gfx.commit();
@@ -508,7 +505,3 @@ void plot(output_t* Output)
 }
 
 // -----------------------------------------------------------------------------
-
-
-
-
