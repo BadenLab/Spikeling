@@ -123,7 +123,7 @@ documentation-home: https://github.com/BadenLab/Spikeling    # At least one of t
 #  - path: [value]                         # Absolute or relative path
 #    title: [value]                        # text
 
-bom: https://github.com/BadenLab/Tetra-Chromatic-Stimulator/tree/master/Bills%20of%20Materials        # recommended | absolute or relative path | Direct the maker to the Bill of Materials
+bom: https://github.com/BadenLab/Spikeling/blob/master/1-click_BOM.tsv       # recommended | absolute or relative path | Direct the maker to the Bill of Materials
 
 #tool-list: [value]                        # recommended | absolute or relative path | Direct the maker to a list of tools required to make the thing
 
