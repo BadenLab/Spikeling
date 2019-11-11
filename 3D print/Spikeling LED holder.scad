@@ -1,5 +1,5 @@
 tol = 0.1;
-Smoothness = 360;
+Smoothness = 200;
 Wall = 2;
 
 r_LED = 8.9/2;
