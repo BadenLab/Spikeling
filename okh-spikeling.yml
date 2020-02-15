@@ -63,11 +63,11 @@ contact:
 #    affiliation: [value]                   # text
 #    email: [value]                         # email address
 
-#image: [value]                             # recommended | absolute or relative path
+image: https://camo.githubusercontent.com/0f0fe711eb32d4678433a7b401d66bbfd8709127/68747470733a2f2f6f70656e6c616277617265646f746e65742e66696c65732e776f726470726573732e636f6d2f323031382f30352f7370696b656c696e672d70696363692e706e67                             # recommended | absolute or relative path
 
 version: 1.0                           # text
 
-development-stage: [value]                 # text
+#development-stage: [value]                 # text
 
 made: true                         # boolean - true or false
 
