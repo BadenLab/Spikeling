@@ -105,9 +105,9 @@ license:                                   # At least one license is required | 
   software: CC-BY-SA v4.0                        # recommended where software is used | The license under which the software is released
 
 licensor:
-  name: Andre Maia Chagas                        # text
+  name: Tom Baden                        # text
   affiliation: University of Sussex             # text
-  email: a.maia-chagas@sussex.ac.uk              # email address
+  email: t.baden@sussex.ac.uk              # email address
 
 # Documentation
 
