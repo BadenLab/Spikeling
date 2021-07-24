@@ -2,10 +2,18 @@
 // Settings for the Arduino Pro (Mini)
 //
 // -----------------------------------------------------------------------------
-#define   USES_FAST_ADC 
+//#define   USES_FAST_ADC
+// Change ADC prescaler 16, which slighly decreases the ADC precision but
+// speeds up the time per loop by ~20%
+
+#define   USES_HOUSEKEEPING
+// Reads all ADCs in one pass
+
+//#define   USES_FASTER_PWM
+// Sets PWM pins 3 and 11 (timer 2) to 31250 Hz
+
 //#define USES_PLOTTING
 //#define USES_FULL_REDRAW
-#define   USES_HOUSEKEEPING
 //#define USES_DAC
 
 #include "Definitions.h"
@@ -40,20 +48,15 @@
 #define digitalReadHelper(pin)       digitalRead(pin)
 #define digitalWriteHelper(pin, val) digitalWrite(pin, val)
 #define analogWriteHelper(pin, val)  analogWrite(pin, val)
-#ifdef USES_FAST_ADC
-  #ifdef USES_HOUSEKEEPING
-    #define analogReadHelper(pin)    ADCData[pin -A0]
-  #else
-    #define analogReadHelper(pin)    ADC_read(pin -A0)
-  #endif
-#else
+#ifdef USES_HOUSEKEEPING
+  #define analogReadHelper(pin)      ADCData[pin -A0]
+#else  
   #define analogReadHelper(pin)      analogRead(pin)
-#endif
+#endif  
 
 // Serial out
 //
 #define SerOutBAUD 234000
-//1000000, 230400
 
 // -----------------------------------------------------------------------------
 // Pin definitions (hardware add-ons)
@@ -64,17 +67,19 @@
 // -----------------------------------------------------------------------------
 // Setting and clearing register bits
 //
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-#ifndef cli
-  #define disable_interrupts cli()
-#endif
-#ifndef sei
-  #define enable_interrupts  sei()
+#ifdef USES_FAST_ADC
+  #ifndef cbi
+    #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+  #endif
+  #ifndef sbi
+    #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+  #endif
+  #ifndef cli
+    #define disable_interrupts cli()
+  #endif
+  #ifndef sei
+    #define enable_interrupts  sei()
+  #endif
 #endif
 
 // -----------------------------------------------------------------------------
@@ -85,26 +90,32 @@ void ADC_init(void)
   for(uint8_t i=0; i<MAX_ADC_DATA; i+=1) {
     ADCData[i] = 0;
   }
-  // Setup ADC
-  //
-	ADMUX   = _BV(REFS0); // Reference voltage = Vcc (5V)
-  sbi(ADCSRA,ADPS2);    // Prescaler 1 MHz
-  cbi(ADCSRA,ADPS1);
-  cbi(ADCSRA,ADPS0);
-	ADCSRA |= _BV(ADEN);  // Enable ADC
+  #ifdef USES_FAST_ADC
+    // Change ADC prescaler 16, which slighly decreases the ADC precision but
+    // speeds up the time per loop by ~20%
+    //
+	  ADMUX   = _BV(REFS0); // Reference voltage = Vcc (5V)
+    sbi(ADCSRA,ADPS2);    // Prescaler 1 MHz
+    cbi(ADCSRA,ADPS1);
+    cbi(ADCSRA,ADPS0);
+	  ADCSRA |= _BV(ADEN);  // Enable ADC
+  #endif
 }
-
 
 static uint16_t ADC_read(uint8_t pin)
 {
-	// Clear previous pin from multiplexer, and start single conversion, and
-  // wait until it completes
-  //
-	ADMUX  &= ~(_BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0));
-	ADMUX  |= pin;
-	ADCSRA |= _BV(ADSC);
-	loop_until_bit_is_clear(ADCSRA, ADSC);
-  return ADC;
+  #ifdef USES_FAST_ADC
+  	// Clear previous pin from multiplexer, and start single conversion, and
+    // wait until it completes
+    //
+	  ADMUX  &= ~(_BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0));
+	  ADMUX  |= pin;
+	  ADCSRA |= _BV(ADSC);
+	  loop_until_bit_is_clear(ADCSRA, ADSC);
+    return ADC;
+  #else
+    return analogRead(pin);  
+  #endif 
  }
 
 // -----------------------------------------------------------------------------
@@ -126,14 +137,11 @@ void initializeHardware()
   pinMode(Syn2PotPin,INPUT); // 5 analog // this one also controls the Analog In gain!
   pinMode(NoisePotPin,INPUT); // 6 analog
 
-  TCCR2B = TCCR2B & 0b11111000 | 0x01; // sets PWM pins 3 and 11 (timer 2) to 31250 Hz
+  #ifdef USES_FASTER_PWM
+    TCCR2B = TCCR2B & 0b11111000 | 0x01; // sets PWM pins 3 and 11 (timer 2) to 31250 Hz
+  #endif  
 
-  // Change ADC prescaler 16, which slighly decreases the ADC precision but
-  // speeds up the time per loop by ~20%
-  //
-  #ifdef USES_FAST_ADC
-    ADC_init();
-  #endif
+  ADC_init();
 }
 
 // -----------------------------------------------------------------------------
@@ -144,11 +152,17 @@ void housekeeping()
   // Read all ADC values and store them
   //
   for(uint8_t i=0; i<N_ADC_IND; i++) {
-    ADMUX  &= ~(_BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0));
-    ADMUX  |= iADCData[i] -A0;
-    ADCSRA |= _BV(ADSC);
-    loop_until_bit_is_clear(ADCSRA, ADSC);
-    ADCData[iADCData[i] -A0] = ADC;
+    /*
+    #ifdef USES_FAST_ADC
+      ADMUX  &= ~(_BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0));
+      ADMUX  |= iADCData[i] -A0;
+      ADCSRA |= _BV(ADSC);
+      loop_until_bit_is_clear(ADCSRA, ADSC);
+      ADCData[iADCData[i] -A0] = ADC;
+    #else
+      ADCData[iADCData[i] -A0] = ADC_read(iADCData[i]);
+    */  
+    ADCData[iADCData[i] -A0] = ADC_read(iADCData[i] -A0);     
   }
 }
 

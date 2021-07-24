@@ -130,7 +130,7 @@ void loop(void) {
 
   // do housekeeping, if needed
   #ifdef USES_HOUSEKEEPING
-  housekeeping();
+    housekeeping();
   #endif
 
   // read button to change spike model
