@@ -14,9 +14,9 @@ manifest-author:
   affiliation: University of Sussex        # text
   email: a.maia-chagas@sussex.ac.uk        # email address
 
-manifest-language: English-UK
+manifest-language: en-UK
 
-documentation-language: English-UK
+documentation-language: en-UK
 
 #manifest-is-translation:
 #  title: [value]                           # text | Title of the original
@@ -32,18 +32,19 @@ documentation-language: English-UK
 
 # Properties
 
-title: Spikeling - A hardware implementation of the Izhikevich model of a spiking neuron.   # required | text | A title to identify the thing
+title: Spikeling
 
 description: |
-    Understanding of how neurons encode and compute information is fundamental to our study of the brain, but opportunities for hands-on experience with neurophysiological techniques on live neurons are scarce in science education. Here, we present Spikeling, an open source £25 in silico implementation of a spiking neuron that mimics a wide range of neuronal behaviours for classroom education and public neuroscience outreach.
-
-intended-use: |                            # recommended | Paragraph
+    A hardware implementation of the Izhikevich model of a spiking neuron.
+    Understanding of how neurons encode and compute information is fundamental to our study of the brain,
+    but opportunities for hands-on experience with neurophysiological techniques on live neurons are scarce in science education.
+    Here, we present Spikeling, an open source £25 in silico implementation of a spiking neuron that mimics a wide range of neuronal behaviours
+    for classroom education and public neuroscience outreach.
+intended-use: |
     Spikeling is a device for teaching how neurons work
-
 keywords:                                  # At least one keyword is recommended | text array
   - neuroscience
   - open science
-
 
 project-link: https://github.com/BadenLab/Spikeling       # At least project-link or documentation-home is required, otherwise recommended | absolute path URL
 
@@ -100,9 +101,9 @@ made-independently: true           # boolean - true or false
 # License
 
 license:                                   # At least one license is required | The format should be an SPDX identifier. See https://spdx.org/licenses/hardware: [value] # recommended | The license under which the hardware is released
-  hardware: CERN OHL v1.2                        # recommended | The license under which the documentation is released
-  documentation: MIT License                   # recommended | The license under which the documentation is released
-  software: CC-BY-SA v4.0                        # recommended where software is used | The license under which the software is released
+  hardware: CERN-OHL-1.2                        # recommended | The license under which the documentation is released
+  documentation: MIT                   # recommended | The license under which the documentation is released
+  software: CC-BY-SA-4.0                        # recommended where software is used | The license under which the software is released
 
 licensor:
   name: Tom Baden                        # text
@@ -123,12 +124,12 @@ documentation-home: https://github.com/BadenLab/Spikeling    # At least one of t
 #  - path: [value]                         # Absolute or relative path
 #    title: [value]                        # text
 
-bom: https://github.com/BadenLab/Spikeling/blob/master/1-click_BOM.tsv       # recommended | absolute or relative path | Direct the maker to the Bill of Materials
+bom: 1-click_BOM.tsv       # recommended | absolute or relative path | Direct the maker to the Bill of Materials
 
 #tool-list: [value]                        # recommended | absolute or relative path | Direct the maker to a list of tools required to make the thing
 
 making-instructions:                      # recommended
-  - path: https://github.com/BadenLab/Spikeling/blob/master/Spikeling%20manual%20and%20exercises.pdf     # Absolute or relative path
+  - path: Spikeling manual and exercises.pdf     # Absolute or relative path
     title: Spikeling manual and exercises                        # text
 
 #manufacturing-files:                      # recommended where applicable
